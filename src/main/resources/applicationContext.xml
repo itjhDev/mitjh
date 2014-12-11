@@ -1,0 +1,60 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.1.xsd
+   ">
+
+	<context:component-scan base-package="cn.com.itjh.mitjh" />
+
+	<!-- 加载配置文件 -->
+	<bean id="propertyHolder"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<!-- 引入jdbc配置文件 -->
+				<value>classpath:jdbc.properties</value>
+				<value>classpath:memcached.properties</value>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- spring管理memcachedClient -->
+	<bean id="memcachedClientBuilder" class="net.rubyeye.xmemcached.XMemcachedClientBuilder">
+		<constructor-arg>
+			<list>
+				<bean class="java.net.InetSocketAddress">
+					<constructor-arg>
+						<value>${memcached.server1.host}</value>
+					</constructor-arg>
+					<constructor-arg>
+						<value>${memcached.server1.port}</value>
+					</constructor-arg>
+				</bean>
+			</list>
+		</constructor-arg>
+		<constructor-arg>
+			<list>
+				<value>${memcached.server1.weight}</value>
+			<!-- 	<value>${memcached.server2.weight}</value> -->
+			</list>
+		</constructor-arg>
+		<property name="connectionPoolSize" value="${memcached.connectionPoolSize}" />
+		<property name="commandFactory">
+			<bean class="net.rubyeye.xmemcached.command.TextCommandFactory"></bean>
+		</property>
+		<property name="sessionLocator">
+			<bean class="net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator"></bean>
+		</property>
+		<property name="transcoder">
+			<bean class="net.rubyeye.xmemcached.transcoders.SerializingTranscoder" />
+		</property>
+	</bean>
+	<bean id="memcachedClient" factory-bean="memcachedClientBuilder"
+		factory-method="build" destroy-method="shutdown" />
+
+</beans>
