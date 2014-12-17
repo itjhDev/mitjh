@@ -5,7 +5,7 @@ package cn.com.itjh.mitjh.domain;
  * 文章分类. <br>
  * 文章分类
  * 
- * @Copyright vcinema
+ * @Copyright itjh
  * @Project
  * @author 宋立君
  * @date 2014年12月2日 下午7:08:25
