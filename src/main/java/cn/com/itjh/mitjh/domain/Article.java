@@ -1,7 +1,7 @@
 package cn.com.itjh.mitjh.domain;
 
 /**
- * 
+ *  
  * 文章实体类. <br>
  * 文章实体类
  * @Copyright itjh
