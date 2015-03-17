@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.com.itjh.mitjh.dao.PeopleOperationArticleDao">
+
+
+	<select id="checkUserCollection" parameterType="map" resultType="int">
+		SELECT COUNT(id) FROM `user_collection` WHERE user_id =
+		#{user_client_id} AND article_id = #{article_id}
+	</select>
+
+
+	<insert id="saveUserCollection" parameterType="map">
+		INSERT INTO
+		`user_collection` (`user_id`, `article_id`, `time`) VALUES
+		(#{user_client_id}, #{article_id}, #{time});
+
+	</insert>
+
+	<select id="queryArticleListByUserCollection" resultType="cn.com.itjh.mitjh.domain.Article">
+		SELECT
+		wpp.ID AS aid,
+		wpp.post_date AS DATE,
+		wpp.post_title AS title,
+		(SELECT
+		guid
+		FROM
+		wp_posts
+		WHERE id = wppm.meta_value) AS img,
+		wpu.ID AS author_id,
+		wpu.display_name AS author
+		FROM
+		wp_posts wpp
+		LEFT JOIN wp_users wpu
+		ON wpp.post_author = wpu.ID
+		LEFT JOIN wp_postmeta wppm
+		ON wpp.ID = wppm.post_id
+		LEFT JOIN `user_collection` uc
+		ON wpp.id = uc.`article_id`
+		WHERE wpp.post_status = 'publish'
+		AND wpp.post_type = 'post'
+		AND wppm.meta_key = '_thumbnail_id'
+		AND uc.`user_id`=#{user_client_id}
+		ORDER BY uc.`time` DESC
+
+		LIMIT #{pageNum},#{showNum}
+	</select>
+
+</mapper>

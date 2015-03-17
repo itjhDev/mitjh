@@ -62,7 +62,6 @@ public class PeopleServer {
         try {
             if (null != user_client_id && "" != user_client_id && null != face && "" != face && null != nickname
                     && "" != nickname) {
-                
                                 
                 People people = new People(user_client_id,nickname,face,platform_id);
 

@@ -6,7 +6,7 @@
 	<insert id="save" parameterType="cn.com.itjh.mitjh.domain.People">
 
 		INSERT INTO
-		`mitjh`.`third_users` (`user_client_id`, `nickname`, `face`,
+		 `third_users` (`user_client_id`, `nickname`, `face`,
 		`platform_id`) VALUES (#{user_client_id}, #{nickname}, #{face},
 		#{platform_id});
 
