@@ -63,6 +63,7 @@ public class PeopleServer {
             if (null != user_client_id && "" != user_client_id && null != face && "" != face && null != nickname
                     && "" != nickname) {
                 
+                                
                 People people = new People(user_client_id,nickname,face,platform_id);
 
                 int count = peopleService.save(people);
@@ -71,6 +72,12 @@ public class PeopleServer {
                     result.put("result", 1);
                     result.put("people", people);
                     result.put("description", "用户信息注册成功");// 描述信息
+                }
+                if (count == 2) {
+                    logger.info("用户登录成功");
+                    result.put("result", 1);
+                    result.put("people", people);
+                    result.put("description", "用户信息获取成功");// 描述信息
                 }
             } else {
                 result.put("result", 0);

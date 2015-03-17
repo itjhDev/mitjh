@@ -1,85 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="cn.com.itjh.mitjh.dao.ArticleDao">
+<mapper namespace="cn.com.itjh.mitjh.dao.PeopleDao">
 
 
-	<select id="queryArticleListByNew" resultType="cn.com.itjh.mitjh.domain.Article">
-		SELECT
-		wpp.ID as
-		aid ,wpp.post_date as date,wpp.post_title as title
-		,(select guid from
-		wp_posts where id = wppm.meta_value) as img
-		,wpu.ID as
-		author_id,wpu.display_name as author
-		FROM wp_posts wpp
-		left join
-		wp_users wpu on wpp.post_author = wpu.ID
-		left join wp_postmeta wppm on
-		wpp.ID = wppm.post_id
-		where wpp.post_status = 'publish' and
-		wpp.post_type = 'post' and
-		wppm.meta_key='_thumbnail_id'
-		ORDER BY
-		wpp.post_date DESC LIMIT #{pageNum},#{showNum}
-	</select>
-	<select id="queryArticleListByCategory" resultType="cn.com.itjh.mitjh.domain.Article">
-		SELECT
-		wpp.ID
-		AS aid,
-		wpp.post_date AS DATE,
-		wpp.post_title AS title,
-		(SELECT
-		guid
-		FROM
-		wp_posts
-		WHERE id = wppm.meta_value) AS img,
-		wpu.ID AS author_id,
-		wpu.display_name AS author
-		FROM
-		wp_posts wpp
-		LEFT JOIN wp_users wpu
-		ON
-		wpp.post_author = wpu.ID
-		LEFT JOIN wp_postmeta wppm
-		ON wpp.ID =
-		wppm.post_id
-		LEFT JOIN wp_term_relationships wptr
-		ON wpp.`ID` =
-		wptr.`object_id`
-		LEFT JOIN wp_term_taxonomy wptt
-		ON
-		wptr.`term_taxonomy_id` = wptt.`term_taxonomy_id`
-		WHERE wpp.post_status
-		= 'publish'
-		AND wpp.post_type = 'post'
-		AND wppm.meta_key =
-		'_thumbnail_id'
-		AND wptr.`term_taxonomy_id` = #{categoryId}
-		AND
-		wptt.`taxonomy` = 'category'
-		ORDER BY wpp.post_date DESC
-		LIMIT
-		#{pageNum},#{showNum}
-	</select>
-	<select id="queryArticleById" resultType="cn.com.itjh.mitjh.domain.Article">
-		SELECT
-		wpp.ID AS aid
-		,wpp.post_date AS DATE,wpp.post_title AS title,wpp.`post_content` AS
-		content
-		,(SELECT guid FROM wp_posts WHERE id = wppm.meta_value) AS img
-		,wpu.ID AS author_id,wpu.display_name AS author
-		FROM wp_posts wpp
-		LEFT
-		JOIN wp_users wpu ON wpp.post_author = wpu.ID
-		LEFT JOIN wp_postmeta
-		wppm ON wpp.ID = wppm.post_id
-		WHERE wpp.post_status = 'publish' AND
-		wpp.post_type = 'post' AND
-		wppm.meta_key='_thumbnail_id' AND wpp.`ID` =
-		${id}
-	</select>
-	<select id="queryArticleCategory" resultType="cn.com.itjh.mitjh.domain.ArticleCategory">
-		 select term_id as id,name,slug from `wp_terms` 
+	<insert id="save" parameterType="cn.com.itjh.mitjh.domain.People">
+
+		INSERT INTO
+		`mitjh`.`third_users` (`user_client_id`, `nickname`, `face`,
+		`platform_id`) VALUES (#{user_client_id}, #{nickname}, #{face},
+		#{platform_id});
+
+	</insert>
+	
+	<select id="selectUserByUserClientId" resultType="cn.com.itjh.mitjh.domain.People"
+		parameterType="map">
+
+		SELECT * FROM `third_users` WHERE user_client_id=#{userClientId} AND
+		platform_id = #{platformId}
+
 	</select>
 
+
+	<update id="updateUser" parameterType="map">
+		UPDATE third_users SET ${resql}; 
+	</update>	
+	
 </mapper>
