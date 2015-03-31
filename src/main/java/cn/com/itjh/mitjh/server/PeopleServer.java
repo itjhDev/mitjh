@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 
 import net.rubyeye.xmemcached.MemcachedClient;
 
@@ -51,6 +53,7 @@ public class PeopleServer {
 
     @Path("/saveUser")
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     public String saveUser(@FormParam(value = "user_client_id") String user_client_id,
             @FormParam(value = "face") String face, @FormParam(value = "platform_id") int platform_id,
             @FormParam(value = "nickname") String nickname, @Context HttpServletRequest servletRequest,

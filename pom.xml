@@ -26,7 +26,7 @@
 			<artifactId>jersey-client</artifactId>
 			<version>1.9</version>
 		</dependency>
-		
+
 		<!-- Jersey + Spring -->
 		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
@@ -63,7 +63,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<!-- spring核心包 -->
 		<!-- springframe start -->
 		<dependency>
@@ -133,7 +133,7 @@
 		</dependency>
 		<!-- springframe end -->
 
-<!-- Logging -->
+		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -223,6 +223,28 @@
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.6.2</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.integration</groupId>
+			<artifactId>spring-integration-redis</artifactId>
+			<version>${spring.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>1.5.0.RELEASE</version>
 		</dependency>
 	</dependencies>
 	<build>

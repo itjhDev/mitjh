@@ -110,4 +110,44 @@ public interface ArticleService {
     * @Modified by none
      */
     List<ArticleCategory> queryArticleCategory();
+    
+    
+    
+    /**
+     * 
+    * 查询文章总数.
+    * <br>查询文章总数
+    * @Copyright vcinema
+    * @Project
+    * @return
+    * @return Long 
+    * @throws
+    * @author 宋立君
+    * @date 2015年3月31日 下午5:29:59
+    * @Version 
+    * @JDK version used 8.0
+    * @Modification history none
+    * @Modified by none
+     */
+    Long selectCountByNew();
+    
+    
+    /**
+     * 
+     * 根据分类查询文章总数. <br>
+     * 根据分类查询文章总数
+     * 
+     * @Copyright vcinema
+     * @Project
+     * @return
+     * @return Long
+     * @throws
+     * @author 宋立君
+     * @date 2015年3月31日 下午5:29:59
+     * @Version
+     * @JDK version used 8.0
+     * @Modification history none
+     * @Modified by none
+     */
+    Long selectCountByByCategory(Map<String, Object> params);
 }

@@ -35,4 +35,5 @@ public interface PeopleService {
     * @Modified by none
      */
     int save(People people);
+
 }

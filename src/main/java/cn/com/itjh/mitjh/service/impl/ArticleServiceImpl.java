@@ -56,5 +56,15 @@ public class ArticleServiceImpl implements ArticleService {
     public   List<ArticleCategory> queryArticleCategory() {
         return articleDao.queryArticleCategory();
     }
+    @Override
+    public Long selectCountByNew() {
+        return articleDao.selectCountByNew();
+    }
+
+    @Override
+    public Long selectCountByByCategory(Map<String, Object> params) {
+        return articleDao.selectCountByByCategory(params);
+    }
+
 
 }

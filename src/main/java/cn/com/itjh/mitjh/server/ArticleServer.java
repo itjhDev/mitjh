@@ -1,10 +1,13 @@
 package cn.com.itjh.mitjh.server;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,8 +19,13 @@ import javax.ws.rs.core.MediaType;
 import net.rubyeye.xmemcached.MemcachedClient;
 
 import org.apache.log4j.Logger;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import redis.clients.jedis.JedisPoolConfig;
 import cn.com.itjh.mitjh.domain.Article;
 import cn.com.itjh.mitjh.domain.ArticleCategory;
 import cn.com.itjh.mitjh.service.ArticleService;
@@ -49,49 +57,87 @@ public class ArticleServer {
 
     @Resource
     private MemcachedClient memcachedClient;
+    @Resource
+    private RedisTemplate<String, Article> redisTemplate;
 
     Gson gson = new Gson();
 
     /**
      * 
-    * 获取最新发布的文章.
-    * <br>获取最新发布的文章
-    * @Copyright vcinema
-    * @Project
-    * @param pageNum
-    * @param showNum
-    * @param servletResponse
-    * @return
-    * @return String 
-    * @throws
-    * @author 宋立君
-    * @date 2014年11月3日 上午11:42:13
-    * @Version 
-    * @JDK version used 8.0
-    * @Modification history none
-    * @Modified by none
+     * 获取最新发布的文章. <br>
+     * 获取最新发布的文章
+     * 
+     * @Copyright vcinema
+     * @Project
+     * @param pageNum
+     * @param showNum
+     * @param servletResponse
+     * @return
+     * @return String
+     * @throws
+     * @author 宋立君
+     * @date 2014年11月3日 上午11:42:13
+     * @Version
+     * @JDK version used 8.0
+     * @Modification history none
+     * @Modified by none
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleListByNew/{pageNum}/{showNum}")
     public String queryArticleListByNew(@PathParam(value = "pageNum") int pageNum,
-            @PathParam(value = "showNum") int showNum, @Context HttpServletResponse servletResponse) {
+            @PathParam(value = "showNum") int showNum, @Context HttpServletRequest servletRequest,
+            @Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map
         Map<String, Object> result = new HashMap<String, Object>();
         String resultJson = "";
         try {
             Map<String, Object> params = new HashMap<String, Object>();
-            pageNum =pageNum*showNum;
-            params.put("pageNum", pageNum);
-            params.put("showNum", showNum);
-            List<Article> articles = articleService.queryArticleListByNew(params);
+            // pageNum = pageNum * showNum;
+
+            int start = showNum * (pageNum);// 因为redis中list元素位置基数是0
+            int end = start + showNum;
+
+            System.out.println("start: " + start + "  end:  " + end);
+
+//            params.put("pageNum", pageNum);
+//            params.put("showNum", showNum);
+            logger.info("查询条件：" + params);
+
+//             redisTemplate.delete("artices_new");
+            List<Article> articles = new ArrayList<Article>();
+
+            // 查询文章总数
+            Long acount = articleService.selectCountByNew();
+
+            Long anewl = redisTemplate.opsForList().size("artices_new");
+            
+            if (acount > anewl) {//数据库文章总数比缓存多
+                Long ad = (acount - anewl);
+                params.put("limit", "limit " +  ad);
+                //查询新增的数据,存放到缓存中
+                articles = articleService.queryArticleListByNew(params);
+                anewl =  redisTemplate.opsForList().rightPushAll("artices_new", articles);
+            }
+
+            if (anewl > 0) {// redis中有数据
+                articles = redisTemplate.opsForList().range("artices_new", start, end);
+            } else {
+                articles = articleService.queryArticleListByNew(params);
+                anewl =  redisTemplate.opsForList().rightPushAll("artices_new", articles);
+            }
+
             if (null != articles) {
-                logger.info("获取最新文章成功");
+                System.out.println("文章列表长度：" + anewl);
+                // logger.info("获取最新文章成功");
                 result.put("result", 1);
                 result.put("content", articles);
                 result.put("description", "文章列表获取成功");// 描述信息
-            }else{
+
+                //
+
+            } else {
                 result.put("result", -1);
                 result.put("content", articles);
                 result.put("description", "文章列表获取失败");// 描述信息
@@ -106,27 +152,82 @@ public class ArticleServer {
         resultJson = gson.toJson(result);
         return resultJson;
     }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("redisTest")
+    public String redisTest() {
+        int pageNo = 6;
+        int pageSize = 6;
+        //
+        // redisTemplate.delete("a");
+        // for (int i = 1; i <= 30; i++) {
+        // redisTemplate.opsForList().leftPushAll("a", i + "");
+        // }
+        //
+        // redisTemplate.opsForList().leftPushAll("articles", arg1)
+        //
+        // long al = redisTemplate.opsForList().leftPush("a", "dd").longValue();
+        //
+        // System.out.println("al长度：" + al);
+        //
+        // // System.out.println("a:" + redisTemplate.opsForList().range("a", 0, ));
+        //
+        // int start = 0 * (pageNo - 1);// 因为redis中list元素位置基数是0
+        // int end = start + pageSize - 1;
+        //
+        // List<Serializable> results = redisTemplate.opsForList().range("a", start, end);// 从start算起，start算一个元素，到结束那个元素
+        // for (Serializable str : results) {
+        // System.out.println(str);
+        // }
+        //
+        //
+        // redisTemplate.opsForValue().set("name", "江湖");
+
+        return null;
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleListByCategory/{categoryId}/{pageNum}/{showNum}")
-    public String queryArticleListByCategory(@PathParam(value = "categoryId") int categoryId,@PathParam(value = "pageNum") int pageNum,
-            @PathParam(value = "showNum") int showNum, @Context HttpServletResponse servletResponse) {
+    public String queryArticleListByCategory(@PathParam(value = "categoryId") int categoryId,
+            @PathParam(value = "pageNum") int pageNum, @PathParam(value = "showNum") int showNum,
+            @Context HttpServletRequest servletRequest, @Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map
         Map<String, Object> result = new HashMap<String, Object>();
         String resultJson = "";
         try {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put("pageNum", pageNum);
-            params.put("showNum", showNum);
+            int start = showNum * (pageNum);// 因为redis中list元素位置基数是0
+            int end = start + showNum;
+            System.out.println("start: " + start + "  end:  " + end);
             params.put("categoryId", categoryId);
-            List<Article> articles = articleService.queryArticleListByCategory(params);
+            logger.info("查询条件：" + params);
+            List<Article> articles = new ArrayList<Article>();
+            // 查询分类下文章总数
+            Long acount = articleService.selectCountByByCategory(params);
+            Long anewl = redisTemplate.opsForList().size("artices_categoryId");
+            if (acount > anewl) {//数据库文章总数比缓存多
+                Long ad = (acount - anewl);
+                params.put("limit", "limit " +  ad);
+                //查询新增的数据,存放到缓存中
+                articles = articleService.queryArticleListByCategory(params);
+                anewl =  redisTemplate.opsForList().rightPushAll("artices_categoryId", articles);
+            }
+            if (anewl > 0) {// redis中有数据
+                articles = redisTemplate.opsForList().range("artices_categoryId", start, end);
+            } else {
+                articles = articleService.queryArticleListByCategory(params);
+                anewl =  redisTemplate.opsForList().rightPushAll("artices_categoryId", articles);
+            }
+      
             if (null != articles) {
-                logger.info("获取分类："+categoryId+"文章成功");
+                logger.info("获取分类：" + categoryId + "文章成功");
                 result.put("result", 1);
                 result.put("content", articles);
-                result.put("description", "获取分类："+categoryId+"文章成功");// 描述信息
-            }else{
+                result.put("description", "获取分类：" + categoryId + "文章成功");// 描述信息
+            } else {
                 result.put("result", -1);
                 result.put("content", articles);
                 result.put("description", "文章列表获取失败");// 描述信息
@@ -141,30 +242,31 @@ public class ArticleServer {
         resultJson = gson.toJson(result);
         return resultJson;
     }
-    
+
     /**
      * 
-    * 获取单个文章.
-    * <br>根据文章id获取文章详情
-    * @Copyright vcinema
-    * @Project
-    * @param aid 文章id
-    * @param servletResponse
-    * @return
-    * @return String 
-    * @throws
-    * @author 宋立君
-    * @date 2014年11月3日 上午11:42:31
-    * @Version 
-    * @JDK version used 8.0
-    * @Modification history none
-    * @Modified by none
+     * 获取单个文章. <br>
+     * 根据文章id获取文章详情
+     * 
+     * @Copyright vcinema
+     * @Project
+     * @param aid
+     *            文章id
+     * @param servletResponse
+     * @return
+     * @return String
+     * @throws
+     * @author 宋立君
+     * @date 2014年11月3日 上午11:42:31
+     * @Version
+     * @JDK version used 8.0
+     * @Modification history none
+     * @Modified by none
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleById/{aid}")
-    public String queryArticleById(@PathParam(value = "aid") int aid,
-            @Context HttpServletResponse servletResponse){
+    public String queryArticleById(@PathParam(value = "aid") int aid, @Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map
         Map<String, Object> result = new HashMap<String, Object>();
@@ -172,14 +274,14 @@ public class ArticleServer {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("id", aid);
-            Article article =  articleService.queryArticleById(params);
+            Article article = articleService.queryArticleById(params);
             if (null != article) {
                 logger.info("获取文章成功");
                 result.put("aid", aid);
                 result.put("result", 1);
                 result.put("content", article);
                 result.put("description", "文章获取成功");// 描述信息
-            }else{
+            } else {
                 result.put("aid", aid);
                 result.put("result", -1);
                 result.put("content", article);
@@ -193,22 +295,23 @@ public class ArticleServer {
         resultJson = gson.toJson(result);
         return resultJson;
     }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleCategory")
-    public String queryArticleCategory(@Context HttpServletResponse servletResponse){
+    public String queryArticleCategory(@Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map
         Map<String, Object> result = new HashMap<String, Object>();
         String resultJson = "";
         try {
-            List<ArticleCategory> articleCategorys =  articleService.queryArticleCategory();
+            List<ArticleCategory> articleCategorys = articleService.queryArticleCategory();
             if (null != articleCategorys) {
                 logger.info("获取全部分类成功");
                 result.put("result", 1);
                 result.put("content", articleCategorys);
                 result.put("description", "获取全部分类");// 描述信息
-            }else{
+            } else {
                 result.put("result", -1);
                 result.put("content", articleCategorys);
                 result.put("description", "文章列表获取失败");// 描述信息
@@ -221,8 +324,5 @@ public class ArticleServer {
         resultJson = gson.toJson(result);
         return resultJson;
     }
-    
-    
-    
-    
+
 }

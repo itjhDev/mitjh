@@ -27,7 +27,10 @@
 		wp_posts
 		WHERE id = wppm.meta_value) AS img,
 		wpu.ID AS author_id,
-		wpu.display_name AS author
+		wpu.display_name AS author,
+		(SELECT COUNT(id) FROM wp_posts
+		WHERE id = uc.`article_id` AND uc.`user_id` = #{user_client_id}) AS
+		isUserCollect
 		FROM
 		wp_posts wpp
 		LEFT JOIN wp_users wpu

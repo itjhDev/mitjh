@@ -1,5 +1,7 @@
 package cn.com.itjh.mitjh.domain;
 
+import java.io.Serializable;
+
 /**
  *  
  * 文章实体类. <br>
@@ -13,8 +15,15 @@ package cn.com.itjh.mitjh.domain;
  * @Modification history none
  * @Modified by none
  */
-public class Article {
+public class Article implements Serializable {
 
+    /**
+    
+    * 
+    
+    */
+    
+    private static final long serialVersionUID = -786696046736928251L;
     private Integer aid; //文章ID
     private String date; //文章发布时间
     private String title;//文章标题
@@ -24,6 +33,8 @@ public class Article {
     private Integer author_id; //作者ID
     private String author; //作者名称
 
+    private Integer isUserCollect; // 用户是否收藏此文章
+    
     public Integer getAid() {
         return aid;
     }
@@ -96,9 +107,19 @@ public class Article {
     public void setContent(String content) {
         this.content = content;
     }
+    
+    
+
+    public Integer getIsUserCollect() {
+        return isUserCollect;
+    }
+
+    public void setIsUserCollect(Integer isUserCollect) {
+        this.isUserCollect = isUserCollect;
+    }
 
     public Article(Integer aid, String date, String title, String summary, String content, String img,
-            Integer author_id, String author) {
+            Integer author_id, String author, Integer isUserCollect) {
         super();
         this.aid = aid;
         this.date = date;
@@ -108,11 +129,14 @@ public class Article {
         this.img = img;
         this.author_id = author_id;
         this.author = author;
+        this.isUserCollect = isUserCollect;
     }
 
     @Override
     public String toString() {
         return "Article [aid=" + aid + ", date=" + date + ", title=" + title + ", summary=" + summary + ", content="
-                + content + ", img=" + img + ", author_id=" + author_id + ", author=" + author + "]";
+                + content + ", img=" + img + ", author_id=" + author_id + ", author=" + author + ", isUserCollect="
+                + isUserCollect + "]";
     }
+
 }
