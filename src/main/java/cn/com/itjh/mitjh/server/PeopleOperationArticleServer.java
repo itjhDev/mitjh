@@ -153,7 +153,7 @@ public class PeopleOperationArticleServer {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleListByUserCollection/{user_client_id}/{pageNum}/{showNum}")
-    public String queryArticleListByUserCollection(@PathParam(value = "user_client_id") int user_client_id,@PathParam(value = "pageNum") int pageNum,
+    public String queryArticleListByUserCollection(@PathParam(value = "user_client_id") String user_client_id,@PathParam(value = "pageNum") int pageNum,
             @PathParam(value = "showNum") int showNum, @Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map

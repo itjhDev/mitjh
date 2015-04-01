@@ -169,6 +169,7 @@ public class ArticleServer {
         redisTemplate.delete("artices_new");
         redisTemplate.delete("artices_2");
         redisTemplate.delete("artices_3");
+        redisTemplate.delete("artices_4");
 
         return null;
     }
@@ -202,7 +203,6 @@ public class ArticleServer {
                 params.put("limit", "limit " +  ad);
                 //查询新增的数据,存放到缓存中
                 articles = articleService.queryArticleListByCategory(params);
-                anewl =  redisTemplate.opsForList().leftPushAll("artices_"+categoryId, articles);
                 if (anewl == 0) {
                     anewl =  redisTemplate.opsForList().rightPushAll("artices_"+categoryId, articles);
                 }else{
