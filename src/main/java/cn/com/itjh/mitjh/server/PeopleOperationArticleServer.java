@@ -163,7 +163,7 @@ public class PeopleOperationArticleServer {
             Map<String, Object> params = new HashMap<String, Object>();
             pageNum = pageNum*showNum;
             params.put("pageNum", pageNum);
-            params.put("showNum", showNum);
+            params.put("showNum", showNum); 
             params.put("user_client_id", user_client_id);
             List<Article> articles = peopleOperationArticleService.queryArticleListByUserCollection(params);
             if (null != articles) {

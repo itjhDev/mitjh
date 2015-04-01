@@ -96,7 +96,10 @@ public class ArticleServer {
             Map<String, Object> params = new HashMap<String, Object>();
             // pageNum = pageNum * showNum;
 
-            int start = showNum * (pageNum);// 因为redis中list元素位置基数是0
+            int start = showNum * (pageNum) ;// 因为redis中list元素位置基数是0
+            if (start > 0) {
+                start += pageNum;
+            }
             int end = start + showNum;
 
             System.out.println("start: " + start + "  end:  " + end);
@@ -118,7 +121,11 @@ public class ArticleServer {
                 params.put("limit", "limit " +  ad);
                 //查询新增的数据,存放到缓存中
                 articles = articleService.queryArticleListByNew(params);
-                anewl =  redisTemplate.opsForList().rightPushAll("artices_new", articles);
+                if (anewl == 0) {
+                    anewl =  redisTemplate.opsForList().rightPushAll("artices_new", articles);
+                }else{
+                    anewl =  redisTemplate.opsForList().leftPushAll("artices_new", articles);
+                }
             }
 
             if (anewl > 0) {// redis中有数据
@@ -159,30 +166,9 @@ public class ArticleServer {
     public String redisTest() {
         int pageNo = 6;
         int pageSize = 6;
-        //
-        // redisTemplate.delete("a");
-        // for (int i = 1; i <= 30; i++) {
-        // redisTemplate.opsForList().leftPushAll("a", i + "");
-        // }
-        //
-        // redisTemplate.opsForList().leftPushAll("articles", arg1)
-        //
-        // long al = redisTemplate.opsForList().leftPush("a", "dd").longValue();
-        //
-        // System.out.println("al长度：" + al);
-        //
-        // // System.out.println("a:" + redisTemplate.opsForList().range("a", 0, ));
-        //
-        // int start = 0 * (pageNo - 1);// 因为redis中list元素位置基数是0
-        // int end = start + pageSize - 1;
-        //
-        // List<Serializable> results = redisTemplate.opsForList().range("a", start, end);// 从start算起，start算一个元素，到结束那个元素
-        // for (Serializable str : results) {
-        // System.out.println(str);
-        // }
-        //
-        //
-        // redisTemplate.opsForValue().set("name", "江湖");
+        redisTemplate.delete("artices_new");
+        redisTemplate.delete("artices_2");
+        redisTemplate.delete("artices_3");
 
         return null;
     }
@@ -200,6 +186,9 @@ public class ArticleServer {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             int start = showNum * (pageNum);// 因为redis中list元素位置基数是0
+            if (start > 0) {
+                start += pageNum;
+            }
             int end = start + showNum;
             System.out.println("start: " + start + "  end:  " + end);
             params.put("categoryId", categoryId);
@@ -207,19 +196,25 @@ public class ArticleServer {
             List<Article> articles = new ArrayList<Article>();
             // 查询分类下文章总数
             Long acount = articleService.selectCountByByCategory(params);
-            Long anewl = redisTemplate.opsForList().size("artices_categoryId");
+            Long anewl = redisTemplate.opsForList().size("artices_"+categoryId);
             if (acount > anewl) {//数据库文章总数比缓存多
                 Long ad = (acount - anewl);
                 params.put("limit", "limit " +  ad);
                 //查询新增的数据,存放到缓存中
                 articles = articleService.queryArticleListByCategory(params);
-                anewl =  redisTemplate.opsForList().rightPushAll("artices_categoryId", articles);
+                anewl =  redisTemplate.opsForList().leftPushAll("artices_"+categoryId, articles);
+                if (anewl == 0) {
+                    anewl =  redisTemplate.opsForList().rightPushAll("artices_"+categoryId, articles);
+                }else{
+                    anewl =  redisTemplate.opsForList().leftPushAll("artices_"+categoryId, articles);
+                }
             }
             if (anewl > 0) {// redis中有数据
-                articles = redisTemplate.opsForList().range("artices_categoryId", start, end);
+                articles = redisTemplate.opsForList().range("artices_"+categoryId, start, end);
+                logger.info("缓存中的分类："+categoryId + " 总数：" + articles);
             } else {
                 articles = articleService.queryArticleListByCategory(params);
-                anewl =  redisTemplate.opsForList().rightPushAll("artices_categoryId", articles);
+                anewl =  redisTemplate.opsForList().rightPushAll("artices_"+categoryId, articles);
             }
       
             if (null != articles) {
