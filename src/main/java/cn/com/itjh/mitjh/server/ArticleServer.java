@@ -261,14 +261,16 @@ public class ArticleServer {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("queryArticleById/{aid}")
-    public String queryArticleById(@PathParam(value = "aid") int aid, @Context HttpServletResponse servletResponse) {
+    public String queryArticleById(@PathParam(value = "aid") int aid,@Context HttpServletRequest servletRequest, @Context HttpServletResponse servletResponse) {
         servletResponse.setContentType("application/json;charset=UTF-8");
         // 返回参数的map
         Map<String, Object> result = new HashMap<String, Object>();
         String resultJson = "";
         try {
+            String userId = servletRequest.getParameter("userId");
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("id", aid);
+            params.put("userId", null != userId ? userId : "0" );
             Article article = articleService.queryArticleById(params);
             if (null != article) {
                 logger.info("获取文章成功");
@@ -280,7 +282,7 @@ public class ArticleServer {
                 result.put("aid", aid);
                 result.put("result", -1);
                 result.put("content", article);
-                result.put("description", "文章列表获取失败");// 描述信息
+                result.put("description", "没有此文章信息");// 描述信息
             }
         } catch (Exception e) {
             result.put("result", -1);

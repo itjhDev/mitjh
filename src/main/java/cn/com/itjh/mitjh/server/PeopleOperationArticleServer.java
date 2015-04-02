@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -117,6 +118,57 @@ public class PeopleOperationArticleServer {
                 logger.info("收藏成功");
                 result.put("result", 1);
                 result.put("description", "收藏成功");// 描述信息
+                break;
+            }
+        } else {
+            result.put("result", 0);
+            result.put("description", "信息传入有误");// 描述信息
+        }
+
+        // 返回收藏信息
+        resultJson = gson.toJson(result);
+        return resultJson;
+    }
+    
+    
+    @Path("/userCanceledArticle")
+    @DELETE
+    public String userCanceledArticle(@FormParam(value = "user_client_id") String user_client_id,
+            @FormParam(value = "article_id") String article_id, @Context HttpServletResponse servletResponse) {
+        servletResponse.setContentType("application/json;charset=UTF-8");
+        logger.info("用户：" + user_client_id + "取消收藏文章：" + article_id);
+        // 返回参数的map
+        Map<String, Object> result = new HashMap<String, Object>();
+        String resultJson = "";
+        // 查询参数
+        Map<String, Object> params = new HashMap<String, Object>();
+        // 删除收藏信息
+        if (!"".equals(user_client_id) && null != user_client_id && !"".equals(article_id) && null != article_id) {
+            // 判断用户是否收藏过,删除
+            params.put("user_client_id", user_client_id);
+            params.put("article_id", article_id);
+            
+            int cuc = peopleOperationArticleService.checkUserCollectionOrDeleteUserCollection(params);
+            switch (cuc) {
+            case 2:
+                logger.info("用户没有收藏此文章");
+                result.put("result", 2);
+                result.put("description", "用户没有收藏此文章,不可以取消");// 描述信息
+                break;
+            case -1:
+                logger.info("系统异常");
+                result.put("result", -1);
+                result.put("description", "系统异常");// 描述信息
+                break;
+            case 0:
+                logger.info("取消收藏失败");
+                result.put("result", 0);
+                result.put("description", "取消收藏失败");// 描述信息
+                break;
+            default:
+                logger.info("取消成功");
+                result.put("result", 1);
+                result.put("description", "取消成功");// 描述信息
                 break;
             }
         } else {

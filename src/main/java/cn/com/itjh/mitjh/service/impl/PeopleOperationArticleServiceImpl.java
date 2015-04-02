@@ -65,4 +65,26 @@ public class PeopleOperationArticleServiceImpl implements PeopleOperationArticle
         return peopleOperationArticleDao.queryArticleListByUserCollection(params);
     }
 
+    @Override
+    public int checkUserCollectionOrDeleteUserCollection(Map<String, Object> params) {
+        
+        int result = 0;
+        try {
+            // 检测用户是否收藏过
+            int count = peopleOperationArticleDao.checkUserCollection(params);
+            if (count > 0) {//不进行取消收藏操作
+                //进行取消收藏操作
+                params.put("time", new Date());
+                result = peopleOperationArticleDao.deleteUserCollection(params);
+            }else{
+                result = 2;
+            }
+        } catch (Exception e) {
+            result = -1;
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 }

@@ -84,7 +84,10 @@
 		,wpp.post_date AS DATE,wpp.post_title AS title,wpp.`post_content` AS
 		content
 		,(SELECT guid FROM wp_posts WHERE id = wppm.meta_value) AS img
-		,wpu.ID AS author_id,wpu.display_name AS author
+		,wpu.ID AS author_id,wpu.display_name AS author,
+		(SELECT COUNT(*) FROM
+		`user_collection` WHERE `user_id` = #{userId} AND `article_id` =
+		${id}) AS isUserCollect
 		FROM wp_posts wpp
 		LEFT
 		JOIN wp_users wpu ON wpp.post_author = wpu.ID
@@ -93,9 +96,11 @@
 		wppm
 		ON wpp.ID = wppm.post_id
 
-		WHERE wpp.post_status = 'publish' AND
+		WHERE wpp.post_status =
+		'publish' AND
 		wpp.post_type = 'post' AND
-		wppm.meta_key='_thumbnail_id' AND wpp.`ID` =
+		wppm.meta_key='_thumbnail_id'
+		AND wpp.`ID` =
 		${id}
 	</select>
 	<select id="queryArticleCategory" resultType="cn.com.itjh.mitjh.domain.ArticleCategory">

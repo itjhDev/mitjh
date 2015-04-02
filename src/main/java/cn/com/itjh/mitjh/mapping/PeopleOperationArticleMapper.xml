@@ -5,7 +5,7 @@
 
 	<select id="checkUserCollection" parameterType="map" resultType="int">
 		SELECT COUNT(id) FROM `user_collection` WHERE user_id =
-		#{user_client_id} AND article_id = #{article_id}
+		#{user_client_id} AND article_id = #{article_id} and state = 1
 	</select>
 
 
@@ -15,6 +15,12 @@
 		(#{user_client_id}, #{article_id}, #{time});
 
 	</insert>
+
+	<update id="deleteUserCollection" parameterType="map">
+		update
+		user_collection set state = 0 ,`time` = #{time} where article_id =
+		#{article_id} and user_id= #{user_client_id}
+	</update>
 
 	<select id="queryArticleListByUserCollection" resultType="cn.com.itjh.mitjh.domain.Article">
 		SELECT
@@ -26,7 +32,8 @@
 		FROM
 		wp_posts
 		WHERE id = wppm.meta_value) AS img,
-		wpu.ID AS author_id,
+		wpu.ID AS
+		author_id,
 		wpu.display_name AS author,
 		(SELECT COUNT(id) FROM wp_posts
 		WHERE id = uc.`article_id` AND uc.`user_id` = #{user_client_id}) AS
@@ -34,18 +41,22 @@
 		FROM
 		wp_posts wpp
 		LEFT JOIN wp_users wpu
-		ON wpp.post_author = wpu.ID
+		ON wpp.post_author
+		= wpu.ID
 		LEFT JOIN wp_postmeta wppm
 		ON wpp.ID = wppm.post_id
-		LEFT JOIN `user_collection` uc
+		LEFT JOIN
+		`user_collection` uc
 		ON wpp.id = uc.`article_id`
-		WHERE wpp.post_status = 'publish'
+		WHERE wpp.post_status =
+		'publish'
 		AND wpp.post_type = 'post'
 		AND wppm.meta_key = '_thumbnail_id'
 		AND uc.`user_id`=#{user_client_id}
+		AND uc.state = 1
 		ORDER BY uc.`time` DESC
-
-		LIMIT #{pageNum},#{showNum}
+		LIMIT
+		#{pageNum},#{showNum}
 	</select>
 
 </mapper>

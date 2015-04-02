@@ -59,5 +59,23 @@ public interface PeopleOperationArticleService {
     * @Modified by none
      */
     List<Article> queryArticleListByUserCollection(Map<String, Object> params);
+    /**
+     * 
+    * 用户取消收藏文章.
+    * <br>用户取消收藏文章
+    * @Copyright vcinema
+    * @Project
+    * @param params
+    * @return
+    * @return int 
+    * @throws
+    * @author 宋立君
+    * @date 2015年4月2日 下午3:41:22
+    * @Version 
+    * @JDK version used 8.0
+    * @Modification history none
+    * @Modified by none
+     */
+    int checkUserCollectionOrDeleteUserCollection(Map<String, Object> params);
 
 }
