@@ -19,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import net.rubyeye.xmemcached.MemcachedClient;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.client.oauth2.OAuth2ClientSupport;
+import org.glassfish.jersey.client.oauth2.OAuth2CodeGrantFlow;
 import org.springframework.stereotype.Repository;
 
 import cn.com.itjh.mitjh.domain.Article;
@@ -135,6 +137,7 @@ public class PeopleOperationArticleServer {
     @DELETE
     public String userCanceledArticle(@FormParam(value = "user_client_id") String user_client_id,
             @FormParam(value = "article_id") String article_id, @Context HttpServletResponse servletResponse) {
+        
         servletResponse.setContentType("application/json;charset=UTF-8");
         logger.info("用户：" + user_client_id + "取消收藏文章：" + article_id);
         // 返回参数的map
@@ -239,4 +242,7 @@ public class PeopleOperationArticleServer {
         return resultJson;
     }
 
+    
+    
+    
 }
