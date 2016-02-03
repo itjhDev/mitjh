@@ -62,7 +62,7 @@ http://api.itjh.net/v1/poas/queryArticleListByUserCollection/186256489/0/11
 GET方式
 
 186256489 // 用户id
-
+```json
 {
     "result": 1,
     "description": "文章列表获取成功",
@@ -93,7 +93,7 @@ GET方式
         }
     ]
 }
-
+```
 #修改根据文章id获取文章详情接口
 http://api.itjh.net/v1/ArticleServer/queryArticleById/403?userId=1862462231
 
